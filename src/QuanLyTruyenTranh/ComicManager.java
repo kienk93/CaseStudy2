@@ -10,6 +10,12 @@ import java.util.regex.Pattern;
 
 public class ComicManager {
 
+    public static final String URL1 = "http://truyenqq.com/the-loai/chuyen-sinh-91.html";
+    public static final String LISTTRUYEN1 = "<h3 class=\"title-book\"><a href=\"(.*?)\" title=\"(.*?)\">(.*?)</a></h3>";
+    public static final String CRAWL1 = LISTTRUYEN1;
+    public static final String URL2 = "https://ln.hako.re/";
+    public static final String CRAWL2 = "<div class=\"thumb_attr series-title\"><a href=\"(.*?)\" title=\"(.*?)\">(.*?)</a></div>";
+    public static final String DATA = "src\\Data\\ComicData.txt";
     Scanner input = new Scanner(System.in);
     ArrayList<ComicBook> comicBookList = new ArrayList<>();
 
@@ -35,8 +41,8 @@ public class ComicManager {
         System.out.println("8. Sắp xếp comic theo id ");
         System.out.println("9. Ghi danh sách manga ra file ");
         System.out.println("10. Đọc file ");
-        System.out.println("11. Craw manga chuyển sinh ");
-        System.out.println("12. Craw manga top tuần ");
+        System.out.println("11. Crawl manga chuyển sinh ");
+        System.out.println("12. Crawl lightnovel ");
         System.out.println("0. Exit ");
     }
 
@@ -58,21 +64,18 @@ public class ComicManager {
     public ComicBook addComicBookManga() {
         System.out.println("Nhập id manga");
         int id = checkEqualsID();
-        System.out.println("Nhập tên manga");
-        String name = input.nextLine();
-        System.out.println("Nhập thể loại manga");
-        String genre = input.nextLine();
-        System.out.println("Nhập năm sản xuất");
-        String yearCreate = input.nextLine();
-        System.out.println("Nhập số chapter");
-        int chapter = Integer.parseInt(input.nextLine());
-        return new ComicBookManga(id, name, genre, yearCreate, chapter);
+        return getComicBookManga(id);
 
     }
 
     public ComicBook addComicBookMangaWithOutEqualsID() {
         System.out.println("Nhập lại id manga");
         int id = Integer.parseInt(input.nextLine());
+        return getComicBookManga(id);
+
+    }
+
+    private ComicBook getComicBookManga(int id) {
         System.out.println("Nhập tên manga");
         String name = input.nextLine();
         System.out.println("Nhập thể loại manga");
@@ -82,12 +85,16 @@ public class ComicManager {
         System.out.println("Nhập số chapter");
         int chapter = Integer.parseInt(input.nextLine());
         return new ComicBookManga(id, name, genre, yearCreate, chapter);
-
     }
 
     public ComicBook addComicBookLightNovel() {
         System.out.println("Nhập id lightnovel");
         int id = checkEqualsID();
+        return getComicBookLightNovel(id);
+
+    }
+
+    private ComicBook getComicBookLightNovel(int id) {
         System.out.println("Nhập tên lightnovel");
         String name = input.nextLine();
         System.out.println("Nhập thể loại lightnovel");
@@ -98,22 +105,12 @@ public class ComicManager {
         String length = input.nextLine();
 
         return new ComicBookLightNovel(id, name, genre, yearCreate, length);
-
     }
 
     public ComicBook addComicBookLightNovelWithOutEqualsID() {
         System.out.println("Nhập lại id lightnovel");
         int id = Integer.parseInt(input.nextLine());
-        System.out.println("Nhập tên lightnovel");
-        String name = input.nextLine();
-        System.out.println("Nhập thể loại lightnovel");
-        String genre = input.nextLine();
-        System.out.println("Nhập năm sản xuất lightnovel");
-        String yearCreate = input.nextLine();
-        System.out.println("Nhập số lượng từ của lightnovel");
-        String length = input.nextLine();
-
-        return new ComicBookLightNovel(id, name, genre, yearCreate, length);
+        return getComicBookLightNovel(id);
 
     }
 
@@ -134,30 +131,34 @@ public class ComicManager {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Sai kiểu dữ liệu!");
             return checkEqualsID();
         }
         return id;
     }
 
     public int checkID() {
-        System.out.println("nhập ID muốn tìm");
-        int key = Integer.parseInt(input.nextLine());
-        int index;
-        int left = 0;
-        int right = comicBookList.size() - 1;
-        do {
-            int mid = (left + right) / 2;
-            if (key == comicBookList.get(mid).getId()) {
-                index = mid;
-                return index;
-            } else if (key < comicBookList.get(mid).getId()) {
-                right = mid - 1;
-            } else {
-                left = mid + 1;
-            }
-        } while (left <= right);
-        return -1;
+        try {
+            System.out.println("nhập ID muốn tìm");
+            int key = Integer.parseInt(input.nextLine());
+            int index;
+            int left = 0;
+            int right = comicBookList.size() - 1;
+            do {
+                int mid = (left + right) / 2;
+                if (key == comicBookList.get(mid).getId()) {
+                    index = mid;
+                    return index;
+                } else if (key < comicBookList.get(mid).getId()) {
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            } while (left <= right);
+            return -1;
+        } catch (Exception e) {
+            return checkID();
+        }
+
     }
 
     public void replaceComicByID() {
@@ -172,6 +173,7 @@ public class ComicManager {
                 comicBookList.set(check, addComicBookLightNovelWithOutEqualsID());
             }
         }
+
     }
 
     public void deteleComicByID() {
@@ -182,6 +184,8 @@ public class ComicManager {
         } else {
             comicBookList.remove(check);
             System.out.println("List đã được cập nhật");
+            System.out.println("=====================================================================");
+            displayList();
         }
     }
 
@@ -199,6 +203,8 @@ public class ComicManager {
 
         }
         System.out.println("List đã được cập nhật");
+        System.out.println("=====================================================================");
+        displayList();
     }
 
     public void displayManga() {
@@ -230,11 +236,13 @@ public class ComicManager {
             comicBookList.set(i, temp);
         }
         System.out.println("List đã được cập nhật");
+        System.out.println("=====================================================================");
+        displayList();
     }
 
     public void writeDataToFile() {
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("src\\Data\\ComicData.txt"));
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA));
             oos.writeObject(comicBookList);
             oos.close();
             System.out.println("Success!!!");
@@ -253,7 +261,7 @@ public class ComicManager {
     public List<ComicBook> readData() {
         List<ComicBook> x = new ArrayList<>();
         try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream("src\\Data\\ComicData.txt"));
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(DATA));
             x = (List<ComicBook>) ois.readObject();
             ois.close();
         } catch (IOException | ClassNotFoundException e) {
@@ -262,31 +270,32 @@ public class ComicManager {
         return x;
     }
 
-    public void crawlMangaChuyenSinh() throws IOException {
+    public String crawlMangaChuyenSinh() throws IOException {
         System.out.println("List truyện manga chuyển sinh");
-        URL url = new URL("http://truyenqq.com/the-loai/chuyen-sinh-91.html");
+        URL url = new URL(URL1);
         Scanner scanner = new Scanner(new InputStreamReader(url.openStream()));
         scanner.useDelimiter("\\Z");
         String content = scanner.next();
         scanner.close();
         content = content.replaceAll("\\n+", "");
-        Pattern pattern = Pattern.compile(" <a href=\"(.*?)\" title=\"(.*?)\">");
+        Pattern pattern = Pattern.compile(CRAWL1);
         Matcher matcher = pattern.matcher(content);
-        showDataFromWeb(matcher, 10);
 
-
+        content.trim();
+        showDataFromWeb(matcher, 20);
+        return  content;
     }
 
     public void crawlLightNovel() throws IOException {
         System.out.println("List truyện lightnovel");
-        URL url = new URL("https://ln.hako.re/");
+        URL url = new URL(URL2);
         Scanner scanner = new Scanner(new InputStreamReader(url.openStream()));
         scanner.useDelimiter("\\Z");
-        String content = scanner.next();
+        String content2 = scanner.next();
         scanner.close();
-        content = content.replaceAll("\\n+", "");
-        Pattern pattern = Pattern.compile("title=\"(.*?)?\">");
-        Matcher matcher = pattern.matcher(content);
+        content2 = content2.replaceAll("\\n+", "");
+        Pattern pattern = Pattern.compile(CRAWL2);
+        Matcher matcher = pattern.matcher(content2);
         showDataFromWeb(matcher, 15);
 
     }
@@ -298,7 +307,7 @@ public class ComicManager {
             if (i == x) {
                 break;
             }
-            System.out.println(matcher.group());
+            System.out.println(matcher.group(3));
             i++;
         }
     }
@@ -347,7 +356,9 @@ public class ComicManager {
                 case 12:
                     crawlLightNovel();
                     break;
+                case 13:
 
+                    break;
                 case 0:
                     System.exit(0);
             }
